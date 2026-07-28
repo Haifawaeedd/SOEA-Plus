@@ -24,9 +24,13 @@ SOEA-Plus-Anonymous/
 │   ├── cucr_main_table.csv           # CUCR summary: Safe Action Rate per model per condition
 │   ├── cucr_step1_natural.csv        # Step 1: Natural elicitation outputs
 │   ├── cucr_step2_intervention.csv   # Step 2: Intervention outputs (5 uncertainty levels + masked)
-│   └── cucr_response_curves.png      # Figure 1: CUCR response curves
+│   ├── cucr_response_curves.png      # Figure 1: CUCR response curves
+│   ├── pdemc_components.png          # Figure 2: PDEMC component breakdown
+│   └── protocol_comparison.png       # Figure 3: Protocol A vs B safe action rate
 ├── paper/
-│   ├── main.pdf                      # Submitted paper (anonymized)
+│   ├── main.pdf                      # Submitted paper (anonymized, v11)
+│   ├── pdemc_components.png          # Figure 2 (also in results/)
+│   ├── protocol_comparison.png       # Figure 3 (also in results/)
 │   ├── main.tex                      # LaTeX source
 │   └── custom.bib                    # References
 └── data/

@@ -25,6 +25,9 @@
 
 %----------------------------------------------------------------------
 \begin{abstract}
+\noindent\textbf{Code and data:} \url{https://anonymous.4open.science/r/SOEA-Plus-355B}
+
+
 Existing evaluations of LLM metacognition typically observe an LLM's answer, uncertainty statement, and action choice together, making it impossible to determine whether the action actually responds to uncertainty. We introduce a \textbf{matched counterfactual intervention} that holds the claim, evidence, and first-order decision fixed while varying only the uncertainty signal available at the control stage. In a pilot study on biomedical claim verification (PubMedQA), we apply this intervention---the Counterfactual Uncertainty Control Response (CUCR) framework---to two models of the same family at different scales (Llama-3.3-70b and Llama-3.1-8b), enabling a controlled comparison of scale effects on uncertainty-to-control responsiveness. The 70B model shows near-complete behavioral responsiveness in the pilot CUCR setting ($\Delta = +0.84$), while the 8B model exhibits a non-monotonic failure pattern we term the \textit{high-uncertainty regime collapse}, where safe-action rates fall sharply at extreme uncertainty values ($\Delta = +0.18$). These findings are situated within a broader evaluation of 1,000 PubMedQA cases across three contemporary LLMs (GPT-4.1-mini, Llama-3.3-70b, Gemini-2.5-Flash), which reveals a consistent Control Collapse Gap (CCG): models commit to incorrect predictions at rates between 70.6\% and 100\%, despite generating uncertainty estimates. Together, these results suggest that LLM control must be tested by intervention, not inferred from co-produced uncertainty.
 \end{abstract}
 
@@ -93,7 +96,7 @@ where Acc is Stage 1 accuracy, MF (Monitoring Fidelity) is $1 - \text{MAE}(p_i, 
 0 & \text{otherwise}
 \end{cases}
 \end{equation}
-Control receives the highest weight (40\%) as the safety-critical output. Sensitivity analysis over four alternative weight configurations confirms that model rankings are stable across all configurations (see Section~\ref{sec:sensitivity}).
+Control receives the highest weight (40\%) as the safety-critical output, while Accuracy and Monitoring Fidelity are weighted equally (30\% each) to balance first-order correctness with self-awareness. Sensitivity analysis over four alternative weight configurations confirms that model rankings are stable across all configurations (see Section~\ref{sec:sensitivity}).
 
 \subsection{The Control Collapse Gap}
 The Control Collapse Gap (CCG) quantifies the rate at which models commit to incorrect predictions:
@@ -103,9 +106,9 @@ The Control Collapse Gap (CCG) quantifies the rate at which models commit to inc
 A high CCG indicates that even when a model is wrong, it overwhelmingly chooses to commit rather than abstain or revise.
 
 \subsection{The CUCR Intervention}
-To provide intervention-based behavioral evidence that the CCG reflects a failure of control rather than merely poor calibration, we introduce the Counterfactual Uncertainty Control Response (CUCR) framework. For each evaluated sample, we hold the claim, evidence, and first-order decision fixed, and inject an imposed uncertainty level $U_{\text{imposed}} \in \{0.10, 0.30, 0.50, 0.70, 0.90\}$ into the prompt, asking the model to select a control action given this specific value. We also include a \textit{masked} condition in which no uncertainty value is provided, serving as a baseline. If the model behaviorally uses the supplied uncertainty signal, its Safe Action Rate should rise monotonically with $U_{\text{imposed}}$.
+To provide intervention-based behavioral evidence that the CCG reflects a failure of control rather than merely poor calibration, we introduce the Counterfactual Uncertainty Control Response (CUCR) framework. For each evaluated sample, we hold the claim, evidence, and first-order decision fixed, and inject an imposed uncertainty level $U_{\text{imposed}} \in \{0.10, 0.30, 0.50, 0.70, 0.90\}$ into the prompt, asking the model to select a control action given this specific value. These five levels were chosen to provide evenly spaced intervals covering the full probability range. We also include a \textit{masked} condition in which no uncertainty value is provided, serving as a baseline. If the model behaviorally uses the supplied uncertainty signal, its Safe Action Rate should rise monotonically with $U_{\text{imposed}}$.
 
-The pilot CUCR study specifically targets a \textit{scale-associated comparison}: we contrast Llama-3.3-70b (70B parameters) against Llama-3.1-8b (8B parameters) from the same model family, primarily varying scale. We note that differences between the two models may reflect factors beyond parameter count, including instruction-tuning and serving configurations.
+The pilot CUCR study (N=50 per model, chosen to establish initial behavioral bounds before larger-scale deployment) specifically targets a \textit{scale-associated comparison}: we contrast Llama-3.3-70b (70B parameters) against Llama-3.1-8b (8B parameters) from the same model family, primarily varying scale. We measure responsiveness via $\Delta = (U=0.9) - (U=0.1)$, capturing the maximum behavioral shift across the uncertainty spectrum. We note that differences between the two models may reflect factors beyond parameter count, including instruction-tuning and serving configurations.
 
 \subsection{Dataset and Models}
 We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pubmedqa} (seed=42, \texttt{pqa\_labeled} split), with labels mapped from \{yes, no, maybe\} to \{\textsc{Supported}, \textsc{Refuted}, \textsc{Inconclusive}\}. The same 1,000 cases are used across all models and conditions. Main SOEA-Plus evaluation uses GPT-4.1-mini, Llama-3.3-70b, and Gemini-2.5-Flash; the CUCR pilot uses Llama-3.3-70b and Llama-3.1-8b.
@@ -115,7 +118,14 @@ We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pu
 
 \subsection{Protocol A: Control Collapse Across Models (N=1,000)}
 
-Table~\ref{tab:main_results} presents the main results. GPT-4.1-mini achieves the highest accuracy (46.2\%) but exhibits a CCG of 70.6\%. Llama-3.3-70b shows a CCG of 91.2\%, while Gemini-2.5-Flash commits to every incorrect prediction (CCG = 100\%), completely ignoring its own mean error probability of 0.500.
+Table~\ref{tab:main_results} presents the main results. GPT-4.1-mini achieves the highest accuracy (46.2\%) but exhibits a CCG of 70.6\%. Llama-3.3-70b shows a CCG of 91.2\%, while Gemini-2.5-Flash commits to every incorrect prediction (CCG = 100\%), completely ignoring its own mean error probability of 0.500. Figure~\ref{fig:pdemc} visualizes the PDEMC component breakdown, highlighting that low Control Rationality (CR) is the primary driver of poor overall performance across all models.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{pdemc_components.png}
+    \caption{PDEMC component breakdown (Protocol A). While Accuracy and Monitoring Fidelity vary, Control Rationality remains the weakest component for all models except GPT-4.1-mini.}
+    \label{fig:pdemc}
+\end{figure}
 
 \begin{table}[h]
 \centering
@@ -135,26 +145,33 @@ Gemini-2.5-Flash & 0.110 & 0.000 & 100.0\% & 0.227 \\
 
 \subsection{Protocol Comparison (N=200)}
 
-Table~\ref{tab:protocol} compares single-prompt vs.\ multi-turn elicitation on the exact same 200-sample subset for both protocols. Llama-3.3-70b shows a substantial improvement under Protocol B: accuracy rises from 0.320 to 0.425, and the safe action rate increases from 11.5\% to 39.5\%. This suggests that staged elicitation, which forces the model to articulate its uncertainty before selecting an action, meaningfully improves control responsiveness. GPT-4.1-mini and Gemini-2.5-Flash show minimal protocol sensitivity.
+Table~\ref{tab:protocol} compares single-prompt (Protocol A, N=1,000) vs.\ multi-turn (Protocol B, N=200) elicitation. Because Protocol B requires three sequential API calls per case, it was applied to the first 200 cases of the dataset; Protocol A numbers in this table reflect the full N=1,000 evaluation. As visualized in Figure~\ref{fig:protocol}, Llama-3.3-70b shows a substantial improvement under Protocol B: accuracy rises from 0.247 to 0.425, and the safe action rate increases from 8.6\% to 39.5\% (+31 percentage points). This suggests that staged elicitation, which forces the model to articulate its uncertainty before selecting an action, meaningfully improves control responsiveness. GPT-4.1-mini and Gemini-2.5-Flash show minimal protocol sensitivity.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{protocol_comparison.png}
+    \caption{Safe Action Rate comparison between Protocol A (single-prompt) and Protocol B (multi-turn). Llama-3.3-70b exhibits a dramatic +31 percentage point improvement under staged elicitation.}
+    \label{fig:protocol}
+\end{figure}
 
 \begin{table}[h]
 \centering
 \small
 \begin{tabular}{llccc}
 \toprule
-\textbf{Model} & \textbf{Protocol} & \textbf{Acc} & \textbf{Safe} & \textbf{CCG} \\
+\textbf{Model} & \textbf{Protocol} & \textbf{Acc} & \textbf{Safe} & \textbf{Commit} \\
 \midrule
-\multirow{2}{*}{GPT-4.1-mini} & A (Single) & 0.455 & 0.120 & 0.697 \\
- & B (Multi) & 0.460 & 0.120 & 0.880 \\
+\multirow{2}{*}{GPT-4.1-mini} & A (N=1,000) & 0.462 & 0.178 & 0.822 \\
+ & B (N=200) & 0.460 & 0.120 & 0.880 \\
 \midrule
-\multirow{2}{*}{Llama-3.3-70b} & A (Single) & 0.320 & 0.115 & 0.882 \\
- & B (Multi) & 0.425 & 0.395 & 0.530 \\
+\multirow{2}{*}{Llama-3.3-70b} & A (N=1,000) & 0.247 & 0.086 & 0.914 \\
+ & B (N=200) & 0.425 & 0.395 & 0.605 \\
 \midrule
-\multirow{2}{*}{Gemini-2.5-Flash} & A (Single) & 0.075 & 0.000 & 1.000 \\
- & B (Multi) & 0.075 & 0.000 & 1.000 \\
+\multirow{2}{*}{Gemini-2.5-Flash} & A (N=1,000) & 0.110 & 0.000 & 1.000 \\
+ & B (N=200) & 0.075 & 0.000 & 1.000 \\
 \bottomrule
 \end{tabular}
-\caption{Protocol A vs.\ Protocol B evaluated on the exact same N=200 subset.}
+\caption{Protocol A (N=1,000) vs.\ Protocol B (N=200). Protocol B was applied to a 200-case subset due to its multi-turn cost. Acc = accuracy, Safe = safe action rate (ABSTAIN + REVISE + SEEK), Commit = overall commit rate (= 1 $-$ Safe). Note: Commit rate differs from CCG (Table~\ref{tab:main_results}), which conditions on incorrect predictions only.}
 \label{tab:protocol}
 \end{table}
 
@@ -182,7 +199,7 @@ Table~\ref{tab:sensitivity} reports PDEMC scores under four alternative weight c
 
 \subsection{Error Analysis (N=3,600)}
 
-A comprehensive audit of 3,600 evaluated rows (3 models $\times$ 1,000 Protocol A + 3 models $\times$ 200 Protocol B) categorized five failure types (Table~\ref{tab:error}). The dominant failure mode is ``Uncertainty ignored'' (48.6\%), confirming that models frequently fail to translate their uncertainty estimates into appropriate control actions. ``High-confidence wrong commit'' (15.3\%)---where the model makes an incorrect prediction, reports low uncertainty, and commits---represents the most critical safety risk in high-stakes settings.
+A comprehensive audit of 3,600 evaluated rows (3 models $\times$ 1,000 Protocol A + 3 models $\times$ 200 Protocol B) categorized five failure types (Table~\ref{tab:error}). The dominant failure mode is ``Uncertainty ignored'' (48.6\%)---defined as committing to an incorrect prediction despite reporting an error probability $p \geq 0.30$---confirming that models frequently fail to translate their uncertainty estimates into appropriate control actions. ``High-confidence wrong commit'' (15.3\%)---where the model makes an incorrect prediction, reports low uncertainty ($p < 0.30$), and commits---represents the most critical safety risk in high-stakes settings.
 
 \begin{table}[h]
 \centering
@@ -250,6 +267,9 @@ The stark contrast in Llama-3.3-70b's behavior between Protocol A and Protocol B
 This study evaluates behavioral responsiveness, not mechanistic internal cognition. The primary testbed is biomedical claim verification (PubMedQA), and results may vary in other domains. The evaluation relies on API-based models, which are subject to versioning changes. The CUCR pilot uses N=50 samples per model; future work should scale this to the full 1,000-sample set and extend the intervention to additional model families. The intervention manipulates only the uncertainty signal while leaving the semantic content of the claim and evidence unchanged; future work should explore whether manipulating other contextual signals produces similar effects. Human-level PDEMC baselines are not directly measured and are left for future annotation studies.
 
 %----------------------------------------------------------------------
+\section*{Data Availability}
+All code, data, and results are available at \url{https://anonymous.4open.science/r/SOEA-Plus-355B}.
+
 \section{Conclusion}
 
 LLM control must be tested by intervention, not inferred from co-produced uncertainty. Our matched counterfactual intervention reveals a significant gap between uncertainty awareness and control responsiveness, with a scale-dependent divergence: the 70B model shows near-complete behavioral responsiveness in the pilot setting, while the 8B model exhibits a high-uncertainty regime collapse. The prevalence of ``Uncertainty ignored'' failures (48.6\%) across the broader 1,000-sample evaluation demonstrates that calibration alone is insufficient as an evaluation criterion for high-stakes deployment.
