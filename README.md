@@ -60,10 +60,12 @@ Labels are mapped: `yes` → `SUPPORTED`, `no` → `REFUTED`, `maybe` → `INCON
 
 ### CUCR Pilot (N=50 per model)
 
-| Model | Natural | U=0.1 | U=0.3 | U=0.5 | U=0.7 | U=0.9 | Δ |
-|-------|---------|-------|-------|-------|-------|-------|---|
-| Llama-3.3-70b | 0.22 | 0.16 | 1.00 | 1.00 | 1.00 | 1.00 | +0.84 |
-| Llama-3.1-8b | 0.16 | 0.16 | 1.00 | 1.00 | 0.96 | 0.34 | +0.18 |
+| Model | Natural | Masked | U=0.1 | U=0.3 | U=0.5 | U=0.7 | U=0.9 | Δ |
+|-------|---------|--------|-------|-------|-------|-------|-------|---|
+| Llama-3.3-70b | 0.22 | 0.26 | 0.16 | 1.00 | 1.00 | 1.00 | 1.00 | +0.84 |
+| Llama-3.1-8b | 0.16 | 0.18 | 0.16 | 1.00 | 1.00 | 0.96 | 0.34 | +0.18 |
+
+*Masked = no uncertainty value provided (baseline). Natural = joint elicitation baseline. Δ = (U=0.9) − (U=0.1).*
 
 The 8B model exhibits a **high-uncertainty regime collapse** at U=0.90.
 
