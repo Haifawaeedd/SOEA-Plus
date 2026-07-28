@@ -87,7 +87,7 @@ The PDEMC score integrates all three stages:
 \begin{equation}
 \text{PDEMC} = 0.30 \times \text{Acc} + 0.30 \times \text{MF} + 0.40 \times \text{CR}
 \end{equation}
-where Acc is Stage 1 accuracy, MF (Monitoring Fidelity) is $1 - \text{MAE}(p_i, e_i)$, and CR (Control Rationality) is defined as:
+where Acc is Stage 1 accuracy, MF (Monitoring Fidelity) is $1 - \text{MAE}(p_i, e_i)$ (with $e_i = 1$ if the Stage 1 decision is incorrect, and $0$ otherwise), and CR (Control Rationality) is defined as:
 \begin{equation}
 \text{CR} = 
 \begin{cases} 
@@ -96,7 +96,7 @@ where Acc is Stage 1 accuracy, MF (Monitoring Fidelity) is $1 - \text{MAE}(p_i, 
 0 & \text{otherwise}
 \end{cases}
 \end{equation}
-Control receives the highest weight (40\%) as the safety-critical output, while Accuracy and Monitoring Fidelity are weighted equally (30\% each) to balance first-order correctness with self-awareness. Sensitivity analysis over four alternative weight configurations confirms that model rankings are stable across all configurations (see Section~\ref{sec:sensitivity}).
+Control receives the highest weight (40\%) as the safety-critical output, while Accuracy and Monitoring Fidelity are weighted equally (30\% each) to balance first-order correctness with self-awareness. PDEMC collapses these three dimensions into a single ranking-stable score, enabling robust cross-study comparison and sensitivity analysis. Sensitivity analysis over four alternative weight configurations confirms that model rankings are stable across all configurations (see Section~\ref{sec:sensitivity}).
 
 \subsection{The Control Collapse Gap}
 The Control Collapse Gap (CCG) quantifies the rate at which models commit to incorrect predictions:
@@ -111,7 +111,7 @@ To provide intervention-based behavioral evidence that the CCG reflects a failur
 The pilot CUCR study (N=50 per model, chosen to establish initial behavioral bounds before larger-scale deployment) specifically targets a \textit{scale-associated comparison}: we contrast Llama-3.3-70b (70B parameters) against Llama-3.1-8b (8B parameters) from the same model family, primarily varying scale. We measure responsiveness via $\Delta = (U=0.9) - (U=0.1)$, capturing the maximum behavioral shift across the uncertainty spectrum. We note that differences between the two models may reflect factors beyond parameter count, including instruction-tuning and serving configurations.
 
 \subsection{Dataset and Models}
-We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pubmedqa} (seed=42, \texttt{pqa\_labeled} split), with labels mapped from \{yes, no, maybe\} to \{\textsc{Supported}, \textsc{Refuted}, \textsc{Inconclusive}\}. The same 1,000 cases are used across all models and conditions. Main SOEA-Plus evaluation uses GPT-4.1-mini, Llama-3.3-70b, and Gemini-2.5-Flash; the CUCR pilot uses Llama-3.3-70b and Llama-3.1-8b.
+We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pubmedqa} (seed=42, \texttt{pqa\_labeled} split), with labels mapped from \{yes, no, maybe\} to \{\textsc{Supported}, \textsc{Refuted}, \textsc{Inconclusive}\}. The same 1,000 cases are used across all models and conditions. Main SOEA-Plus evaluation uses GPT-4.1-mini, Llama-3.3-70b, and Gemini-2.5-Flash. These three models were selected to represent distinct providers (OpenAI, Meta/Groq, Google) and span a range of parameter scales and training paradigms; cross-model comparisons in Table~\ref{tab:main_results} should be interpreted as provider-level baselines rather than controlled scale comparisons. The CUCR pilot uses Llama-3.3-70b and Llama-3.1-8b.
 
 %----------------------------------------------------------------------
 \section{Main Results}
@@ -258,6 +258,8 @@ The 8B model, by contrast, exhibits a non-monotonic pattern. While it responds a
 \section{Discussion}
 
 Our results indicate that explicit uncertainty and behavioral control are separable. The CUCR intervention provides direct behavioral intervention evidence that while the 70B model can align its actions with an imposed uncertainty signal, the 8B model does so only within a moderate uncertainty range. This finding suggests, under the evaluated conditions, that control responsiveness is scale-dependent and non-linear.
+
+We acknowledge that CUCR measures behavioral responsiveness to an explicit numerical signal; whether this reflects genuine metacognitive use of uncertainty or sophisticated instruction-following is a question for future mechanistic work. However, the \textit{masked} condition provides partial evidence against pure instruction-following: without a numerical signal, both models revert to a stable default behavior (26\% and 18\% safe action rates) rather than random selection, indicating that the injected number shifts an existing behavioral baseline. Crucially, for deployed systems where uncertainty is communicated numerically (e.g., via calibration pipelines), behavioral responsiveness to the signal is the operationally relevant test.
 
 The stark contrast in Llama-3.3-70b's behavior between Protocol A and Protocol B further suggests that control responsiveness is highly protocol-moderated. This underscores the need for intervention-based evaluations rather than relying solely on co-produced uncertainty statements. Gemini-2.5-Flash's degenerate behavior (CCG = 100\% in natural settings) further highlights that some models appear to completely decouple their stated uncertainty from their action policy.
 
