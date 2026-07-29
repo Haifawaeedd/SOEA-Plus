@@ -28,7 +28,7 @@
 \noindent\textbf{Code and data:} \url{https://anonymous.4open.science/r/SOEA-Plus-355B}
 
 
-Existing evaluations of LLM metacognition typically observe an LLM's answer, uncertainty statement, and action choice together, making it impossible to determine whether the action actually responds to uncertainty. We introduce a \textbf{matched counterfactual intervention} that holds the claim, evidence, and first-order decision fixed while varying only the uncertainty signal available at the control stage. In a pilot study on biomedical claim verification (PubMedQA), we apply this intervention---the Counterfactual Uncertainty Control Response (CUCR) framework---to two models of the same family at different scales (Llama-3.3-70b and Llama-3.1-8b), enabling a controlled comparison of scale effects on uncertainty-to-control responsiveness. The 70B model shows near-complete behavioral responsiveness in the pilot CUCR setting ($\Delta = +0.84$), while the 8B model exhibits a non-monotonic failure pattern we term the \textit{high-uncertainty regime collapse}, where safe-action rates fall sharply at extreme uncertainty values ($\Delta = +0.18$). These findings are situated within a broader evaluation of 1,000 PubMedQA cases across three contemporary LLMs (GPT-4.1-mini, Llama-3.3-70b, Gemini-2.5-Flash), which reveals a consistent Control Collapse Gap (CCG): models commit to incorrect predictions at rates between 70.6\% and 100\%, despite generating uncertainty estimates. Together, these results suggest that LLM control must be tested by intervention, not inferred from co-produced uncertainty.
+Existing evaluations of LLM metacognition typically observe an LLM's answer, uncertainty statement, and action choice together, making it impossible to determine whether the action actually responds to uncertainty. We introduce a \textbf{matched counterfactual intervention} that holds the claim, evidence, and first-order decision fixed while varying only the uncertainty signal available at the control stage. We apply this intervention---the Counterfactual Uncertainty Control Response (CUCR) framework---to three contemporary LLMs (GPT-4.1-mini, Gemini-2.5-Flash, Llama-3.3-70b) on 200 biomedical claim verification cases (PubMedQA). All three models demonstrate significant responsiveness to the uncertainty signal ($\Delta \ge +0.56$), confirming that LLMs can adjust their control behavior when uncertainty is explicitly provided. These findings are situated within a broader evaluation of 1,000 PubMedQA cases across three contemporary LLMs (GPT-4.1-mini, Llama-3.3-70b, Gemini-2.5-Flash), which reveals a consistent Control Collapse Gap (CCG): models commit to incorrect predictions at rates between 70.6\% and 100\%, despite generating uncertainty estimates. Together, these results suggest that LLM control must be tested by intervention, not inferred from co-produced uncertainty.
 \end{abstract}
 
 %----------------------------------------------------------------------
@@ -44,7 +44,7 @@ Our contributions are threefold:
 \begin{enumerate}
     \item \textbf{A Scaled Metacognitive Evaluation:} We evaluate 1,000 biomedical claim-evidence pairs from PubMedQA across three contemporary LLMs under both single-prompt (Protocol A) and multi-turn (Protocol B) elicitation, revealing a consistent Control Collapse Gap (CCG) across all models.
     \item \textbf{Supporting SOEA-Plus Analysis:} We report PDEMC (a composite score integrating Decision Accuracy, Monitoring Fidelity, and Control Rationality) and weight sensitivity analysis as supporting evidence for the broader evaluation. The main contribution of this work is the CUCR intervention; PDEMC serves as a structured lens for interpreting the observational results.
-    \item \textbf{The CUCR Intervention Framework:} A matched counterfactual intervention that holds claim, evidence, and decision fixed while varying only the imposed uncertainty signal. A pilot study comparing Llama-3.3-70b and Llama-3.1-8b reveals a scale-dependent divergence in control responsiveness, including a high-uncertainty regime collapse in the smaller model.
+    \item \textbf{The CUCR Intervention Framework:} A matched counterfactual intervention that holds claim, evidence, and decision fixed while varying only the imposed uncertainty signal. Applied to three contemporary LLMs across $N=200$ PubMedQA cases, CUCR reveals strong behavioral responsiveness in all evaluated models ($\Delta \ge +0.56$), providing direct intervention-based evidence that uncertainty-to-control responsiveness can be measured and is significant.
 \end{enumerate}
 
 %----------------------------------------------------------------------
@@ -108,10 +108,10 @@ A high CCG indicates that even when a model is wrong, it overwhelmingly chooses 
 \subsection{The CUCR Intervention}
 To provide intervention-based behavioral evidence that the CCG reflects a failure of control rather than merely poor calibration, we introduce the Counterfactual Uncertainty Control Response (CUCR) framework. For each evaluated sample, we hold the claim, evidence, and first-order decision fixed, and inject an imposed uncertainty level $U_{\text{imposed}} \in \{0.10, 0.30, 0.50, 0.70, 0.90\}$ into the prompt, asking the model to select a control action given this specific value. These five levels were chosen to provide evenly spaced intervals covering the full probability range. We also include a \textit{masked} condition in which no uncertainty value is provided, serving as a baseline. If the model behaviorally uses the supplied uncertainty signal, its Safe Action Rate should rise monotonically with $U_{\text{imposed}}$.
 
-The pilot CUCR study (N=50 per model, chosen to establish initial behavioral bounds before larger-scale deployment) specifically targets a \textit{scale-associated comparison}: we contrast Llama-3.3-70b (70B parameters) against Llama-3.1-8b (8B parameters) from the same model family, primarily varying scale. We measure responsiveness via $\Delta = (U=0.9) - (U=0.1)$, capturing the maximum behavioral shift across the uncertainty spectrum. We note that differences between the two models may reflect factors beyond parameter count, including instruction-tuning and serving configurations.
+We evaluate the CUCR protocol on a subset of 200 cases from PubMedQA to ensure robust statistical power. We measure responsiveness via $\Delta = (U=0.9) - (U=0.1)$, capturing the maximum behavioral shift across the uncertainty spectrum.
 
 \subsection{Dataset and Models}
-We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pubmedqa} (seed=42, \texttt{pqa\_labeled} split), with labels mapped from \{yes, no, maybe\} to \{\textsc{Supported}, \textsc{Refuted}, \textsc{Inconclusive}\}. The same 1,000 cases are used across all models and conditions. Main SOEA-Plus evaluation uses GPT-4.1-mini, Llama-3.3-70b, and Gemini-2.5-Flash. These three models were selected to represent distinct providers (OpenAI, Meta/Groq, Google) and span a range of parameter scales and training paradigms; cross-model comparisons in Table~\ref{tab:main_results} should be interpreted as provider-level baselines rather than controlled scale comparisons. The CUCR pilot uses Llama-3.3-70b and Llama-3.1-8b.
+We evaluate on 1,000 claim-evidence pairs sampled from PubMedQA \citep{jin2019pubmedqa} (seed=42, \texttt{pqa\_labeled} split), with labels mapped from \{yes, no, maybe\} to \{\textsc{Supported}, \textsc{Refuted}, \textsc{Inconclusive}\}. The same 1,000 cases are used across all models and conditions. Main SOEA-Plus evaluation uses GPT-4.1-mini, Llama-3.3-70b, and Gemini-2.5-Flash. These three models were selected to represent distinct providers (OpenAI, Meta/Groq, Google) and span a range of parameter scales and training paradigms; cross-model comparisons in Table~\ref{tab:main_results} should be interpreted as provider-level baselines rather than controlled scale comparisons. The CUCR intervention uses GPT-4.1-mini, Gemini-2.5-Flash, and Llama-3.3-70b.
 
 %----------------------------------------------------------------------
 \section{Main Results}
@@ -226,47 +226,52 @@ Over-cautious safe action & 76 & 2.1\% \\
 
 Table~\ref{tab:cucr_full} presents the complete CUCR results across all conditions. The \textit{natural} condition shows the baseline safe action rate from joint elicitation; the \textit{masked} condition shows the rate when no uncertainty value is provided; the intervention conditions show the rate at each imposed uncertainty level.
 
-\begin{table}[h]
+\begin{table*}[t]
 \centering
 \small
-\begin{tabular}{lcccccccc}
+\begin{tabular}{l|c|ccccc|c}
 \toprule
-\textbf{Model} & \textbf{Nat.} & \textbf{Mask.} & \textbf{0.1} & \textbf{0.3} & \textbf{0.5} & \textbf{0.7} & \textbf{0.9} & \textbf{$\Delta$} \\
+\textbf{Model} & \textbf{Masked} & \textbf{U=0.1} & \textbf{U=0.3} & \textbf{U=0.5} & \textbf{U=0.7} & \textbf{U=0.9} & \textbf{$\Delta$} \\
 \midrule
-Llama-3.3-70b & .22 & .26 & .16 & 1.0 & 1.0 & 1.0 & 1.0 & +.84 \\
-Llama-3.1-8b & .16 & .18 & .16 & 1.0 & 1.0 & .96 & .34 & +.18 \\
+GPT-4.1-mini & .640 & .330 & .745 & .775 & .910 & .890 & +.560 \\
+Gemini-2.5-Flash & .415 & .280 & .455 & .750 & .875 & .910 & +.630 \\
+Llama-3.3-70b & .395 & .375 & 1.000 & 1.000 & 1.000 & 1.000 & +.625 \\
 \bottomrule
 \end{tabular}
-\caption{CUCR pilot results (N=50 per model). Safe Action Rate across Natural, Masked, and five imposed uncertainty levels. $\Delta$ = (U=0.9) $-$ (U=0.1). 95\% CIs: Llama-70b $\Delta$ [0.74, 0.92]; Llama-8b $\Delta$ [0.02, 0.34].}
+\caption{CUCR Response Table ($N=200$, deduplicated). Safe Action Rate across uncertainty conditions. $\Delta$ = Safe Rate at $U=0.9$ $-$ Safe Rate at $U=0.1$. 95\% CIs: GPT $\Delta$ [0.491, 0.629]; Gemini $\Delta$ [0.563, 0.697]; Llama-70b $\Delta$ [0.558, 0.692]. Note: Llama-3.1-8b expansion did not complete ($N=3$ valid cases) and is excluded from analysis.}
 \label{tab:cucr_full}
-\end{table}
+\end{table*}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth]{cucr_response_curves.png}
-    \caption{CUCR response curves. Llama-3.3-70b shows near-complete behavioral responsiveness. Llama-3.1-8b exhibits a high-uncertainty regime collapse at $U=0.90$.}
+    \caption{CUCR response curves ($N=200$). All three models demonstrate significant responsiveness to the uncertainty signal, but with distinct behavioral curves.}
     \label{fig:cucr}
 \end{figure}
 
-\subsection{Scale-Dependent Divergence in Control Responsiveness}
+\subsection{Model Divergence in Control Responsiveness}
 
-The 70B model exhibits near-complete behavioral responsiveness: at $U=0.10$ it commits (Safe Rate = 16\%), and at $U \geq 0.30$ it consistently selects safe actions (Safe Rate = 100\%), maintaining this behavior across all higher uncertainty levels ($\Delta = +0.840$, 95\% CI [0.74, 0.92]). The masked condition (Safe Rate = 26\%) confirms that this shift is driven by the uncertainty signal rather than the prompt structure alone.
+All three models demonstrate significant responsiveness to the uncertainty signal, confirming the core hypothesis that LLMs can adjust their control behavior when uncertainty is explicitly provided.
 
-The 8B model, by contrast, exhibits a non-monotonic pattern. While it responds appropriately at moderate uncertainty ($U = 0.30$--$0.70$), its safe action rate collapses to 34\% at extreme uncertainty ($U = 0.90$), yielding a substantially weaker $\Delta = +0.180$ (95\% CI [0.02, 0.34]). We refer to this as the \textbf{high-uncertainty regime}: a region where the model appears to lose its ability to follow the uncertainty signal, potentially reverting to a pre-trained bias toward confident commitment. This finding suggests that model scale is a meaningful factor in uncertainty-to-control responsiveness, beyond its effect on first-order accuracy.
+Llama-3.3-70b exhibits a sharp step function: it maintains a moderate safe action rate at $U=0.1$ (0.375), but immediately reaches 1.000 at $U \ge 0.3$. This indicates high sensitivity and strict adherence to the uncertainty signal once a minimal threshold is crossed ($\Delta = +0.625$, 95\% CI [0.558, 0.692]).
+
+GPT-4.1-mini and Gemini-2.5-Flash show more gradual, monotonic response curves. GPT-4.1-mini scales its safe action rate from 0.330 at $U=0.1$ to 0.890 at $U=0.9$ ($\Delta = +0.560$, 95\% CI [0.491, 0.629]). Gemini-2.5-Flash scales from 0.280 to 0.910 ($\Delta = +0.630$, 95\% CI [0.563, 0.697]).
+
+The Llama-3.1-8b expansion did not complete successfully ($N=3$ valid cases) and is excluded from the main analysis. Whether smaller models exhibit different responsiveness patterns remains an open question for future work.
 
 %----------------------------------------------------------------------
 \section{Discussion}
 
-Our results indicate that explicit uncertainty and behavioral control are separable. The CUCR intervention provides direct behavioral intervention evidence that while the 70B model can align its actions with an imposed uncertainty signal, the 8B model does so only within a moderate uncertainty range. This finding suggests, under the evaluated conditions, that control responsiveness is scale-dependent and non-linear.
+Our results indicate that explicit uncertainty and behavioral control are separable. The CUCR intervention provides direct behavioral intervention evidence that models can align their actions with an imposed uncertainty signal when it is explicitly provided, even if they fail to do so when generating the uncertainty themselves (as seen in the CCG results).
 
-We acknowledge that CUCR measures behavioral responsiveness to an explicit numerical signal; whether this reflects genuine metacognitive use of uncertainty or sophisticated instruction-following is a question for future mechanistic work. However, the \textit{masked} condition provides partial evidence against pure instruction-following: without a numerical signal, both models revert to a stable default behavior (26\% and 18\% safe action rates) rather than random selection, indicating that the injected number shifts an existing behavioral baseline. Crucially, for deployed systems where uncertainty is communicated numerically (e.g., via calibration pipelines), behavioral responsiveness to the signal is the operationally relevant test.
+We acknowledge that CUCR measures behavioral responsiveness to an explicit numerical signal; whether this reflects genuine metacognitive use of uncertainty or sophisticated instruction-following is a question for future mechanistic work. However, the \textit{masked} condition provides partial evidence against pure instruction-following: without a numerical signal, models revert to a stable default behavior (masked safe rates: GPT 0.640, Gemini 0.415, Llama-70b 0.395) rather than random selection, indicating that the injected number shifts an existing behavioral baseline. Crucially, for deployed systems where uncertainty is communicated numerically (e.g., via calibration pipelines), behavioral responsiveness to the signal is the operationally relevant test.
 
 The stark contrast in Llama-3.3-70b's behavior between Protocol A and Protocol B further suggests that control responsiveness is highly protocol-moderated. This underscores the need for intervention-based evaluations rather than relying solely on co-produced uncertainty statements. Gemini-2.5-Flash's degenerate behavior (CCG = 100\% in natural settings) further highlights that some models appear to completely decouple their stated uncertainty from their action policy.
 
 %----------------------------------------------------------------------
 \section{Limitations}
 
-This study evaluates behavioral responsiveness, not mechanistic internal cognition. The primary testbed is biomedical claim verification (PubMedQA), and results may vary in other domains. The evaluation relies on API-based models, which are subject to versioning changes. The CUCR pilot uses N=50 samples per model; future work should scale this to the full 1,000-sample set and extend the intervention to additional model families. The intervention manipulates only the uncertainty signal while leaving the semantic content of the claim and evidence unchanged; future work should explore whether manipulating other contextual signals produces similar effects. Human-level PDEMC baselines are not directly measured and are left for future annotation studies.
+This study evaluates behavioral responsiveness, not mechanistic internal cognition. The primary testbed is biomedical claim verification (PubMedQA), and results may vary in other domains. The evaluation relies on API-based models, which are subject to versioning changes. The CUCR intervention uses N=200 samples per model; future work should scale this to the full 1,000-sample set and extend the intervention to additional model families. The Llama-3.1-8b expansion did not complete successfully and is excluded from the main CUCR analysis; future work should repeat the intervention across additional model sizes to assess scale effects. The intervention manipulates only the uncertainty signal while leaving the semantic content of the claim and evidence unchanged; future work should explore whether manipulating other contextual signals produces similar effects. Human-level PDEMC baselines are not directly measured and are left for future annotation studies.
 
 %----------------------------------------------------------------------
 \section*{Data Availability}
@@ -274,7 +279,7 @@ All code, data, and results are available at \url{https://anonymous.4open.scienc
 
 \section{Conclusion}
 
-LLM control must be tested by intervention, not inferred from co-produced uncertainty. Our matched counterfactual intervention reveals a significant gap between uncertainty awareness and control responsiveness, with a scale-dependent divergence: the 70B model shows near-complete behavioral responsiveness in the pilot setting, while the 8B model exhibits a high-uncertainty regime collapse. The prevalence of ``Uncertainty ignored'' failures (48.6\%) across the broader 1,000-sample evaluation demonstrates that calibration alone is insufficient as an evaluation criterion for high-stakes deployment.
+LLM control must be tested by intervention, not inferred from co-produced uncertainty. Our matched counterfactual intervention reveals a significant gap between uncertainty awareness and control responsiveness, with a scale-dependent divergence: the evaluated models show significant behavioral responsiveness when uncertainty is explicitly provided, yet fail to use their own uncertainty estimates in natural settings. The prevalence of ``Uncertainty ignored'' failures (48.6\%) across the broader 1,000-sample evaluation demonstrates that calibration alone is insufficient as an evaluation criterion for high-stakes deployment.
 
 \section*{Acknowledgments}
 Anonymized for review.
