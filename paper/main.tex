@@ -92,7 +92,7 @@ where Acc is Stage 1 accuracy, MF (Monitoring Fidelity) is $1 - \text{MAE}(p_i, 
 \text{CR} = 
 \begin{cases} 
 1 & \text{if } (\hat{y}_i = y_i \wedge a_i = \textsc{Commit}) \\
-  & \vee (\hat{y}_i \neq y_i \wedge a_i \in \{\textsc{Revise}, \textsc{Abstain}, \textsc{Seek}\}) \\
+  & \vee (\hat{y}_i \neq y_i \wedge a_i \in \{\textsc{Revise}, \textsc{Abstain}, \textsc{Seek\_Evidence}\}) \\
 0 & \text{otherwise}
 \end{cases}
 \end{equation}
@@ -171,7 +171,7 @@ Table~\ref{tab:protocol} compares single-prompt (Protocol A, N=1,000) vs.\ multi
  & B (N=200) & 0.075 & 0.000 & 1.000 \\
 \bottomrule
 \end{tabular}
-\caption{Protocol A (N=1,000) vs.\ Protocol B (N=200). Protocol B was applied to a 200-case subset due to its multi-turn cost. Acc = accuracy, Safe = safe action rate (ABSTAIN + REVISE + SEEK), Commit = overall commit rate (= 1 $-$ Safe). Note: Commit rate differs from CCG (Table~\ref{tab:main_results}), which conditions on incorrect predictions only.}
+\caption{Protocol B Results Relative to Protocol A Baseline. Protocol A uses the full N=1,000 evaluation; Protocol B was applied to a 200-case subset due to multi-turn cost. Because the two protocols use different evaluation sizes, this comparison should be interpreted as a protocol-level diagnostic rather than a paired causal comparison. Acc = accuracy, Safe = safe action rate (ABSTAIN + REVISE + SEEK\_EVIDENCE), Commit = overall commit rate (= 1 $-$ Safe). Note: Commit rate differs from CCG (Table~\ref{tab:main_results}), which conditions on incorrect predictions only.}
 \label{tab:protocol}
 \end{table}
 
@@ -279,7 +279,7 @@ All code, data, and results are available at \url{https://anonymous.4open.scienc
 
 \section{Conclusion}
 
-LLM control must be tested by intervention, not inferred from co-produced uncertainty. Our matched counterfactual intervention reveals a significant gap between uncertainty awareness and control responsiveness, with a scale-dependent divergence: the evaluated models show significant behavioral responsiveness when uncertainty is explicitly provided, yet fail to use their own uncertainty estimates in natural settings. The prevalence of ``Uncertainty ignored'' failures (48.6\%) across the broader 1,000-sample evaluation demonstrates that calibration alone is insufficient as an evaluation criterion for high-stakes deployment.
+LLM control must be tested by intervention, not inferred from co-produced uncertainty. Our matched counterfactual intervention reveals that the evaluated models show significant behavioral responsiveness when uncertainty is explicitly provided, even though the broader SOEA-Plus evaluation shows that they often fail to use self-generated uncertainty in natural settings. The prevalence of ``Uncertainty ignored'' failures (48.6\%) across the broader 1,000-sample evaluation demonstrates that calibration alone is insufficient as an evaluation criterion for high-stakes deployment.
 
 \section*{Acknowledgments}
 Anonymized for review.
