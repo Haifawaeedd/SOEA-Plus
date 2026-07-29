@@ -25,9 +25,6 @@
 
 %----------------------------------------------------------------------
 \begin{abstract}
-\noindent\textbf{Code and data:} \url{https://anonymous.4open.science/r/SOEA-Plus-355B}
-
-
 Existing evaluations of LLM metacognition typically observe an LLM's answer, uncertainty statement, and action choice together, making it impossible to determine whether the action actually responds to uncertainty. We introduce a \textbf{matched counterfactual intervention} that holds the claim, evidence, and first-order decision fixed while varying only the uncertainty signal available at the control stage. We apply this intervention---the Counterfactual Uncertainty Control Response (CUCR) framework---to three contemporary LLMs (GPT-4.1-mini, Gemini-2.5-Flash, Llama-3.3-70b) on 200 biomedical claim verification cases (PubMedQA). All three models demonstrate significant responsiveness to the uncertainty signal ($\Delta \ge +0.56$), confirming that LLMs can adjust their control behavior when uncertainty is explicitly provided. These findings are situated within a broader evaluation of 1,000 PubMedQA cases across three contemporary LLMs (GPT-4.1-mini, Llama-3.3-70b, Gemini-2.5-Flash), which reveals a consistent Control Collapse Gap (CCG): models commit to incorrect predictions at rates between 70.6\% and 100\%, despite generating uncertainty estimates. Together, these results suggest that LLM control must be tested by intervention, not inferred from co-produced uncertainty.
 \end{abstract}
 
@@ -143,7 +140,7 @@ Gemini-2.5-Flash & 0.110 & 0.000 & 100.0\% & 0.227 \\
 \label{tab:main_results}
 \end{table}
 
-\subsection{Protocol Comparison (N=200)}
+\subsection{Protocol-Level Diagnostic: Single-Prompt Baseline vs.\ Multi-Turn Subset}
 
 Table~\ref{tab:protocol} compares single-prompt (Protocol A, N=1,000) vs.\ multi-turn (Protocol B, N=200) elicitation. Because Protocol B requires three sequential API calls per case, it was applied to the first 200 cases of the dataset; Protocol A numbers in this table reflect the full N=1,000 evaluation. As visualized in Figure~\ref{fig:protocol}, Llama-3.3-70b shows a substantial improvement under Protocol B: accuracy rises from 0.247 to 0.425, and the safe action rate increases from 8.6\% to 39.5\% (+31 percentage points). This suggests that staged elicitation, which forces the model to articulate its uncertainty before selecting an action, meaningfully improves control responsiveness. GPT-4.1-mini and Gemini-2.5-Flash show minimal protocol sensitivity.
 
@@ -255,7 +252,7 @@ All three models demonstrate significant responsiveness to the uncertainty signa
 
 Llama-3.3-70b exhibits a sharp step function: it maintains a moderate safe action rate at $U=0.1$ (0.375), but immediately reaches 1.000 at $U \ge 0.3$. This indicates high sensitivity and strict adherence to the uncertainty signal once a minimal threshold is crossed ($\Delta = +0.625$, 95\% CI [0.558, 0.692]).
 
-GPT-4.1-mini and Gemini-2.5-Flash show more gradual, monotonic response curves. GPT-4.1-mini scales its safe action rate from 0.330 at $U=0.1$ to 0.890 at $U=0.9$ ($\Delta = +0.560$, 95\% CI [0.491, 0.629]). Gemini-2.5-Flash scales from 0.280 to 0.910 ($\Delta = +0.630$, 95\% CI [0.563, 0.697]).
+GPT-4.1-mini and Gemini-2.5-Flash show broadly increasing response curves. GPT-4.1-mini scales its safe action rate from 0.330 at $U=0.1$ to a peak of 0.910 at $U=0.7$, with a small non-monotonic fluctuation at the highest uncertainty level ($U=0.9$: 0.890), yielding $\Delta = +0.560$ (95\% CI [0.491, 0.629]). Gemini-2.5-Flash increases monotonically from 0.280 to 0.910 ($\Delta = +0.630$, 95\% CI [0.563, 0.697]).
 
 The Llama-3.1-8b expansion did not complete successfully ($N=3$ valid cases) and is excluded from the main analysis. Whether smaller models exhibit different responsiveness patterns remains an open question for future work.
 
